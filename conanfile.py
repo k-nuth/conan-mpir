@@ -56,6 +56,10 @@ class BitprimMpirConan(ConanFile):
 
     # requires = "m4/1.4.18@bitprim/stable"
 
+    def _is_mingw(self):
+        return self.settings.os == "Windows" and self.settings.compiler == "gcc"
+
+
     def _simplify_microarchitecture(self):
 
         # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
@@ -75,11 +79,14 @@ class BitprimMpirConan(ConanFile):
         if self.options.microarchitecture == "_DUMMY_":
             self.options.microarchitecture = get_cpu_microarchitecture()
         self.output.info("Detected microarchitecture: %s" % (self.options.microarchitecture,))
-        self.options.microarchitecture = self._simplify_microarchitecture()
+
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            self.options.microarchitecture = self._simplify_microarchitecture()
+            
         self.output.info("Compiling for microarchitecture: %s" % (self.options.microarchitecture,))
 
     def requirements(self):
-        if self.settings.os == "Windows" and self.settings.compiler == "gcc": #MinGW
+        if self._is_mingw():
             self.requires.add("m4/1.4.18@bitprim/stable")
 
     def source(self):
@@ -108,7 +115,7 @@ class BitprimMpirConan(ConanFile):
             shutil.copy('./VSYASM/yasm.props', './mpir-3.0.0/build.vc/vsyasm.props')
             shutil.copy('./VSYASM/yasm.targets', './mpir-3.0.0/build.vc/vsyasm.targets')
             shutil.copy('./VSYASM/yasm.xml', './mpir-3.0.0/build.vc/vsyasm.xml')
-        elif self.settings.os == "Windows" and self.settings.compiler == "gcc":
+        elif self._is_mingw():
             # shutil.copy('./yasm.exe', 'C:/Windows/system32/yasm.exe')
 
             # for file in os.listdir("./"):
@@ -139,7 +146,7 @@ class BitprimMpirConan(ConanFile):
             command = "SET LIB=%s;%%LIB%% && SET CL=%s" % (lib_paths, cl_args)
             if verbose:
                 command += " && SET LINK=/VERBOSE"
-        if self.settings.os == "Windows" and self.settings.compiler == "gcc":
+        if self._is_mingw():
             libs = 'LIBS="%s"' % " ".join(["-l%s" % lib for lib in self.deps_cpp_info.libs])
             ldflags = 'LDFLAGS="%s"' % " ".join(["-L%s" % lib for lib in self.deps_cpp_info.lib_paths])
             archflag = "-m32" if self.settings.arch == "x86" else ""
@@ -155,7 +162,7 @@ class BitprimMpirConan(ConanFile):
             os_part = 'apple-darwin'
         elif self.settings.os == "Linux":
             os_part = 'pc-linux-gnu'
-        elif self.settings.os == "Windows" and self.settings.compiler == "gcc": #MinGW
+        elif self._is_mingw(): #MinGW
             os_part = 'pc-msys'
 
         complete_host = "%s-%s" % (self.options.microarchitecture, os_part)
@@ -211,7 +218,7 @@ class BitprimMpirConan(ConanFile):
                 # self.run("msbuild.bat haswell_avx lib x64 release")
                 self.run("msbuild.bat %s lib x64 release" % (self._msvc_microarchitecture(),))
 
-        # elif self.settings.os == "Windows" and self.settings.compiler == "gcc":
+        # elif self._is_mingw():
         else:
             old_path = os.environ['PATH']
             os.environ['PATH'] += os.pathsep + os.getcwd()
@@ -256,7 +263,7 @@ class BitprimMpirConan(ConanFile):
 
     def package(self):
 
-        if self.settings.os == "Windows" and self.settings.compiler == "gcc":
+        if self._is_mingw():
             src_inc_dir = '%s'  % (self.ZIP_FOLDER_NAME)
             dst_inc_dir = '%s/.includes'  % (self.ZIP_FOLDER_NAME)
             lib_dir = '%s/.libs'  % (self.ZIP_FOLDER_NAME)
