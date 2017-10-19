@@ -56,9 +56,26 @@ class BitprimMpirConan(ConanFile):
 
     # requires = "m4/1.4.18@bitprim/stable"
 
+    def _simplify_microarchitecture(self):
+
+        # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
+        #     return 'core2'
+
+        if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
+                                              'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
+            return 'haswell'
+
+        if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
+            return 'skylake'
+
+        return 'core2'
+
+
     def configure(self):
         if self.options.microarchitecture == "_DUMMY_":
             self.options.microarchitecture = get_cpu_microarchitecture()
+        self.output.info("Detected microarchitecture: %s" % (self.options.microarchitecture,))
+        self.options.microarchitecture = self._simplify_microarchitecture()
         self.output.info("Compiling for microarchitecture: %s" % (self.options.microarchitecture,))
 
     def requirements(self):
@@ -138,10 +155,32 @@ class BitprimMpirConan(ConanFile):
             os_part = 'apple-darwin'
         elif self.settings.os == "Linux":
             os_part = 'pc-linux-gnu'
+        elif self.settings.os == "Windows" and self.settings.compiler == "gcc": #MinGW
+            os_part = 'pc-msys'
 
         complete_host = "%s-%s" % (self.options.microarchitecture, os_part)
         host_string = " --build=%s --host=%s" % (complete_host, complete_host)
         return host_string
+
+
+    # def _msvc_microarchitecture(self):
+    #     # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
+    #     #     return 'core2'
+    #     if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
+    #                                           'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
+    #         return 'haswell_avx'
+    #     if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
+    #         return 'skylake_avx'
+    #     return 'core2'
+   
+    def _msvc_microarchitecture(self):
+        if self.options.microarchitecture in ['haswell']:
+            return 'haswell_avx'
+
+        if self.options.microarchitecture in ['skylake']:
+            return 'skylake_avx'
+
+        return 'core2'
 
     def build(self):
         self.output.warn("*** Detected OS: %s" % (self.settings.os))
@@ -152,7 +191,6 @@ class BitprimMpirConan(ConanFile):
         yasm_path = '%s\\' % (os.getcwd()) 
         os.environ['YASMPATH'] = yasm_path
 
-
         if not os.path.exists('C:/Bitprim/usr/bin'):
             shutil.copytree('C:/Program Files/Git/usr/bin', 'C:/Bitprim/usr/bin')
 
@@ -160,9 +198,7 @@ class BitprimMpirConan(ConanFile):
         os.environ['PATH'] = 'C:/Bitprim/usr/bin' + os.pathsep + os.environ['PATH']
         # self.output.warn("*** PATH: %s" % (os.environ['PATH']))
 
-
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-
             if self.settings.compiler.version == 14:
                 build_dir = 'build.vc14'
             elif  self.settings.compiler.version == 15:
@@ -172,7 +208,8 @@ class BitprimMpirConan(ConanFile):
             self.output.warn("*** Detected build_path:   %s" % (build_path))
 
             with tools.chdir(build_path):
-                self.run("msbuild.bat haswell_avx lib x64 release")
+                # self.run("msbuild.bat haswell_avx lib x64 release")
+                self.run("msbuild.bat %s lib x64 release" % (self._msvc_microarchitecture(),))
 
         # elif self.settings.os == "Windows" and self.settings.compiler == "gcc":
         else:
@@ -196,10 +233,12 @@ class BitprimMpirConan(ConanFile):
             if self.settings.os == "Macos":
                 config_options_string += " --with-pic"
 
-            
+            host_string = self._determine_host()
+            self.output.warn(host_string)
+
             disable_assembly = "--disable-assembly" if self.settings.arch == "x86" else ""
 
-            configure_command = "cd %s && %s ./configure --with-pic --enable-static --enable-shared %s %s" % (self.ZIP_FOLDER_NAME, self._generic_env_configure_vars(), config_options_string, disable_assembly)
+            configure_command = "cd %s && %s ./configure %s --with-pic --enable-static --enable-shared %s %s" % (self.ZIP_FOLDER_NAME, self._generic_env_configure_vars(), host_string, config_options_string, disable_assembly)
             self.output.warn("*** configure_command: %s" % (configure_command))
             self.run(configure_command)
 
@@ -263,3 +302,32 @@ class BitprimMpirConan(ConanFile):
     # def config(self):
     #     pass
     #     # del self.settings.compiler.libcxx
+
+
+
+
+        # Core2
+        # Nehalem           |   Westmere                        || 
+        # Sandy Bridge      |   Ivy Bridge  (F16C, RdRand)      || 
+        # Haswell           |   Broadwell   (?)
+        # Skylake
+
+        # K8 Hammer (first 64 bit)
+        # K10
+        # bulldozer
+        # Piledriver
+        # Steamroller
+        # Excavator
+        # Zen
+        # Zen 2
+        # Zen 3
+
+        # Faltan los low-power/low-cost markets: por ejemplo: Bobcat (AMD), Jaguar (AMD), Puma (AMD), 
+
+        # lib_mpir_cxx
+        # lib_mpir_gc
+        # lib_mpir_p3
+        # lib_mpir_core2
+        # lib_mpir_haswell_avx
+        # lib_mpir_skylake_avx
+
