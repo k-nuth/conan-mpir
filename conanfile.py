@@ -185,10 +185,11 @@ class BitprimMpirConan(ConanFile):
             config_options_string = ""
 
             for option_name in self.options.values.fields:
-                activated = getattr(self.options, option_name)
-                if activated:
-                    self.output.info("Activated option! %s" % option_name)
-                    config_options_string += " --%s" % option_name.replace("_", "-")
+                if option_name != 'microarchitecture':
+                    activated = getattr(self.options, option_name)
+                    if activated:
+                        self.output.info("Activated option! %s" % option_name)
+                        config_options_string += " --%s" % option_name.replace("_", "-")
 
             self.output.warn("*** Detected OS: %s" % (self.settings.os))
 
