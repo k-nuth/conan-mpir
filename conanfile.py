@@ -38,12 +38,11 @@ class BitprimMpirConan(ConanFile):
     # generators = "cmake"
     generators = "txt"
 
-    # settings =  "os", "compiler", "arch", "build_type"
-
-    settings = {"os": ["Windows"],
-        "compiler": None,
-        "arch": None,
-        "build_type": None}
+    settings =  "os", "compiler", "arch", "build_type"
+    # settings = {"os": ["Windows"],
+    #     "compiler": None,
+    #     "arch": None,
+    #     "build_type": None}
 
     build_policy = "missing"
 
@@ -110,8 +109,18 @@ class BitprimMpirConan(ConanFile):
             #     if file.endswith("yasm.exe"):
             #         print(os.path.join("./", file))
 
-            shutil.copy('./yasm.exe', 'C:/Windows/system32/')
-            shutil.copy('./yasm.exe', 'C:/MinGw/bin/')
+            try:
+                shutil.copy('./yasm.exe', 'C:/Windows/system32/')
+            except:
+                self.output.warn("Could not copy yasm.exe to C:/Windows/system32/")
+                pass
+    
+            try:
+                shutil.copy('./yasm.exe', 'C:/MinGw/bin/')
+            except:
+                self.output.warn("Could not copy yasm.exe to C:/MinGw/bin/")
+                pass
+
 
             # for file in os.listdir("C:/MinGw/bin/"):
             #     if file.endswith("yasm.exe"):
@@ -293,7 +302,7 @@ class BitprimMpirConan(ConanFile):
             return 'skylake_avx'
 
         return 'core2'
-    
+
     def _is_mingw(self):
         return self.settings.os == "Windows" and self.settings.compiler == "gcc"
 
