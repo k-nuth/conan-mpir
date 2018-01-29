@@ -38,7 +38,13 @@ class BitprimMpirConan(ConanFile):
     # generators = "cmake"
     generators = "txt"
 
-    settings =  "os", "compiler", "arch", "build_type"
+    # settings =  "os", "compiler", "arch", "build_type"
+
+    settings = {"os": ["Windows"],
+        "compiler": None,
+        "arch": None,
+        "build_type": None}
+
     build_policy = "missing"
 
     options = {"shared": [True, False],
@@ -54,25 +60,7 @@ class BitprimMpirConan(ConanFile):
                       "enable_cxx=True", "disable-fft=False", "enable-assert=False", \
                       "microarchitecture=_DUMMY_"
 
-    # requires = "m4/1.4.18@bitprim/stable"
-
-    def _is_mingw(self):
-        return self.settings.os == "Windows" and self.settings.compiler == "gcc"
-
-
-    def _simplify_microarchitecture(self):
-
-        # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
-        #     return 'core2'
-
-        if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
-                                              'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
-            return 'haswell'
-
-        if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
-            return 'skylake'
-
-        return 'core2'
+    # requires = "m4/1.4.14-1@bitprim/stable"
 
 
     def configure(self):
@@ -87,7 +75,7 @@ class BitprimMpirConan(ConanFile):
 
     def requirements(self):
         if self._is_mingw():
-            self.requires.add("m4/1.4.18@bitprim/stable")
+            self.requires.add("m4/1.4.14-1@bitprim/stable")
 
     def source(self):
         # http://mpir.org/mpir-3.0.0.tar.bz2
@@ -130,64 +118,6 @@ class BitprimMpirConan(ConanFile):
             #         print(os.path.join("C:/MinGw/bin/", file))
 
 
-    def _generic_env_configure_vars(self, verbose=False):
-        """Reusable in any lib with configure!!"""
-        command = ""
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
-            libs = 'LIBS="%s"' % " ".join(["-l%s" % lib for lib in self.deps_cpp_info.libs])
-            ldflags = 'LDFLAGS="%s"' % " ".join(["-L%s" % lib for lib in self.deps_cpp_info.lib_paths])
-            archflag = "-m32" if self.settings.arch == "x86" else ""
-            cflags = 'CFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cflags))
-            cpp_flags = 'CPPFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cppflags))
-            command = "env %s %s %s %s" % (libs, ldflags, cflags, cpp_flags)
-        elif self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            cl_args = " ".join(['/I"%s"' % lib for lib in self.deps_cpp_info.include_paths])
-            lib_paths= ";".join(['"%s"' % lib for lib in self.deps_cpp_info.lib_paths])
-            command = "SET LIB=%s;%%LIB%% && SET CL=%s" % (lib_paths, cl_args)
-            if verbose:
-                command += " && SET LINK=/VERBOSE"
-        if self._is_mingw():
-            libs = 'LIBS="%s"' % " ".join(["-l%s" % lib for lib in self.deps_cpp_info.libs])
-            ldflags = 'LDFLAGS="%s"' % " ".join(["-L%s" % lib for lib in self.deps_cpp_info.lib_paths])
-            archflag = "-m32" if self.settings.arch == "x86" else ""
-            cflags = 'CFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cflags))
-            cpp_flags = 'CPPFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cppflags))
-            command = "env %s %s %s %s" % (libs, ldflags, cflags, cpp_flags)
-
-        return command
-
-    def _determine_host(self):
-        if self.settings.os == "Macos":
-            # nehalem-apple-darwin15.6.0
-            os_part = 'apple-darwin'
-        elif self.settings.os == "Linux":
-            os_part = 'pc-linux-gnu'
-        elif self._is_mingw(): #MinGW
-            os_part = 'pc-msys'
-
-        complete_host = "%s-%s" % (self.options.microarchitecture, os_part)
-        host_string = " --build=%s --host=%s" % (complete_host, complete_host)
-        return host_string
-
-
-    # def _msvc_microarchitecture(self):
-    #     # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
-    #     #     return 'core2'
-    #     if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
-    #                                           'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
-    #         return 'haswell_avx'
-    #     if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
-    #         return 'skylake_avx'
-    #     return 'core2'
-   
-    def _msvc_microarchitecture(self):
-        if self.options.microarchitecture in ['haswell']:
-            return 'haswell_avx'
-
-        if self.options.microarchitecture in ['skylake']:
-            return 'skylake_avx'
-
-        return 'core2'
 
     def build(self):
         self.output.warn("*** Detected OS: %s" % (self.settings.os))
@@ -303,6 +233,84 @@ class BitprimMpirConan(ConanFile):
         self.cpp_info.libs = ['mpir']
         # self.output.warn("*** self.cpp_info.libs:   %s" % (self.cpp_info.libs))
 
+
+
+    def _generic_env_configure_vars(self, verbose=False):
+        """Reusable in any lib with configure!!"""
+        command = ""
+        if self.settings.os == "Linux" or self.settings.os == "Macos":
+            libs = 'LIBS="%s"' % " ".join(["-l%s" % lib for lib in self.deps_cpp_info.libs])
+            ldflags = 'LDFLAGS="%s"' % " ".join(["-L%s" % lib for lib in self.deps_cpp_info.lib_paths])
+            archflag = "-m32" if self.settings.arch == "x86" else ""
+            cflags = 'CFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cflags))
+            cpp_flags = 'CPPFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cppflags))
+            command = "env %s %s %s %s" % (libs, ldflags, cflags, cpp_flags)
+        elif self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            cl_args = " ".join(['/I"%s"' % lib for lib in self.deps_cpp_info.include_paths])
+            lib_paths= ";".join(['"%s"' % lib for lib in self.deps_cpp_info.lib_paths])
+            command = "SET LIB=%s;%%LIB%% && SET CL=%s" % (lib_paths, cl_args)
+            if verbose:
+                command += " && SET LINK=/VERBOSE"
+        if self._is_mingw():
+            libs = 'LIBS="%s"' % " ".join(["-l%s" % lib for lib in self.deps_cpp_info.libs])
+            ldflags = 'LDFLAGS="%s"' % " ".join(["-L%s" % lib for lib in self.deps_cpp_info.lib_paths])
+            archflag = "-m32" if self.settings.arch == "x86" else ""
+            cflags = 'CFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cflags))
+            cpp_flags = 'CPPFLAGS="-fPIC %s %s"' % (archflag, " ".join(self.deps_cpp_info.cppflags))
+            command = "env %s %s %s %s" % (libs, ldflags, cflags, cpp_flags)
+
+        return command
+
+    def _determine_host(self):
+        if self.settings.os == "Macos":
+            # nehalem-apple-darwin15.6.0
+            os_part = 'apple-darwin'
+        elif self.settings.os == "Linux":
+            os_part = 'pc-linux-gnu'
+        elif self._is_mingw(): #MinGW
+            os_part = 'pc-msys'
+
+        complete_host = "%s-%s" % (self.options.microarchitecture, os_part)
+        host_string = " --build=%s --host=%s" % (complete_host, complete_host)
+        return host_string
+
+
+    # def _msvc_microarchitecture(self):
+    #     # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
+    #     #     return 'core2'
+    #     if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
+    #                                           'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
+    #         return 'haswell_avx'
+    #     if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
+    #         return 'skylake_avx'
+    #     return 'core2'
+   
+    def _msvc_microarchitecture(self):
+        if self.options.microarchitecture in ['haswell']:
+            return 'haswell_avx'
+
+        if self.options.microarchitecture in ['skylake']:
+            return 'skylake_avx'
+
+        return 'core2'
+    
+    def _is_mingw(self):
+        return self.settings.os == "Windows" and self.settings.compiler == "gcc"
+
+
+    def _simplify_microarchitecture(self):
+
+        # if self.options.microarchitecture in ['x86_64', 'athlon64', 'k8', 'core2', 'corei', 'coreinhm', 'coreiwsm', 'nehalem', 'westmere', 'coreisbr', 'coreisbrnoavx', 'coreiibr', 'coreiibrnoavx', 'sandybridge', 'sandybridgenoavx', 'ivybridge', 'ivybridgenoavx']:
+        #     return 'core2'
+
+        if self.options.microarchitecture in ['coreihwl', 'coreihwlnoavx', 'haswell', 'haswellnoavx', 'coreibwl', 'coreibwlnoavx', 'broadwell', 'broadwellnoavx',
+                                              'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
+            return 'haswell'
+
+        if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
+            return 'skylake'
+
+        return 'core2'
 
 
 
