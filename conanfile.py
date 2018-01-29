@@ -60,6 +60,7 @@ class BitprimMpirConan(ConanFile):
                       "microarchitecture=_DUMMY_"
 
     # requires = "m4/1.4.18@bitprim/stable"
+    # build_requires = "m4/1.4.18@bitprim/stable"
 
 
     def configure(self):
@@ -72,9 +73,13 @@ class BitprimMpirConan(ConanFile):
             
         self.output.info("Compiling for microarchitecture: %s" % (self.options.microarchitecture,))
 
-    def requirements(self):
+    # def requirements(self):
+    #     if self._is_mingw():
+    #         self.requires.add("m4/1.4.18@bitprim/stable")
+
+    def build_requirements(self):
         if self._is_mingw():
-            self.requires.add("m4/1.4.18@bitprim/stable")
+            self.build_requires("m4/1.4.18@bitprim/stable")
 
     def source(self):
         # http://mpir.org/mpir-3.0.0.tar.bz2
