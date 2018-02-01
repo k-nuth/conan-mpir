@@ -181,9 +181,11 @@ class BitprimMpirConan(ConanFile):
             self.output.info("*** Detected bat_file:   %s" % (bat_file))
             
             # Adding Verbosity to msbuild.bat
-            with fileinput.FileInput(bat_file, inplace=True, backup='.bak') as file:
-                for line in file:
-                    print(line.replace("msbuild.exe", "msbuild.exe /verbosity:n")) #, end=''
+            # with fileinput.FileInput(bat_file, inplace=True, backup='.bak') as file:
+            file = fileinput.FileInput(bat_file, inplace=True, backup='.bak')
+            for line in file:
+                print(line.replace("msbuild.exe", "msbuild.exe /verbosity:n")) #, end=''
+            file.close()
             
 
             if self.settings.compiler.runtime == "MD":
@@ -195,13 +197,14 @@ class BitprimMpirConan(ConanFile):
                 props_path = os.path.join(self.ZIP_FOLDER_NAME, "build.vc", props_file_name)
                 self.output.info("*** Detected props_path:   %s" % (props_path))
 
-                with fileinput.FileInput(props_path, inplace=True, backup='.bak') as file:
-                    for line in file:
-                        if self.settings.build_type == "Debug":
-                            print(line.replace("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>"))
-                        else:
-                            print(line.replace("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>"))
-
+                # with fileinput.FileInput(props_path, inplace=True, backup='.bak') as file:
+                file = fileinput.FileInput(props_path, inplace=True, backup='.bak')
+                for line in file:
+                    if self.settings.build_type == "Debug":
+                        print(line.replace("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>"))
+                    else:
+                        print(line.replace("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>"))
+                file.close()
 
             with tools.chdir(build_path):
                 # self.run("msbuild.bat haswell_avx lib x64 release")
