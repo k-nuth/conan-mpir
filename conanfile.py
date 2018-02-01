@@ -183,7 +183,7 @@ class BitprimMpirConan(ConanFile):
             # Adding Verbosity to msbuild.bat
             with fileinput.FileInput(bat_file, inplace=True, backup='.bak') as file:
                 for line in file:
-                    print(line.replace("msbuild.exe", "msbuild.exe /verbosity:n"), end='')
+                    print(line.replace("msbuild.exe", "msbuild.exe /verbosity:n")) #, end=''
             
 
             if self.settings.compiler.runtime == "MD":
@@ -198,9 +198,9 @@ class BitprimMpirConan(ConanFile):
                 with fileinput.FileInput(props_path, inplace=True, backup='.bak') as file:
                     for line in file:
                         if self.settings.build_type == "Debug":
-                            print(line.replace("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>"), end='')
+                            print(line.replace("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>"))
                         else:
-                            print(line.replace("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>"), end='')
+                            print(line.replace("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>"))
 
 
             with tools.chdir(build_path):
