@@ -6,6 +6,7 @@ from conans import tools
 import subprocess
 import shutil
 import importlib
+import fileinput
 
 
 microarchitecture_default = 'x86_64'
@@ -36,7 +37,7 @@ class BitprimMpirConan(ConanFile):
     ZIP_FOLDER_NAME = "mpir-%s" % version
     
     # generators = "cmake"
-    generators = "txt"
+    # generators = "txt"
 
     settings =  "os", "compiler", "arch", "build_type"
     # settings = {"os": ["Windows"],
@@ -95,11 +96,14 @@ class BitprimMpirConan(ConanFile):
         yasm_site = 'http://www.tortall.net/projects/yasm/releases/'
         yasm_exe = 'yasm-%s-win%s.exe' % (yasm_version, sys_arch)
         yasm_download = '%s/%s' % (yasm_site, yasm_exe)
-        self.output.warn("yasm_download: %s" % (yasm_download))
+        self.output.info("yasm_download: %s" % (yasm_download))
         
         download(yasm_download, 'yasm.exe')
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+
+
+
             yasm_path = '%s\\' % (os.getcwd()) 
             os.environ['YASMPATH'] = yasm_path
 
@@ -132,12 +136,24 @@ class BitprimMpirConan(ConanFile):
             #         print(os.path.join("C:/MinGw/bin/", file))
 
 
+    @property
+    def lib_dll_str(self):
+        return "dll" if self.options.shared else "lib"
+
+    @property
+    def debug_release_str(self):
+        return str(self.settings.build_type).lower()
+
+    @property
+    def arch_str(self):
+        return "x64" if self.settings.arch == "x86_64" else "Win32"
 
     def build(self):
-        self.output.warn("*** Detected OS: %s" % (self.settings.os))
+        self.output.info("*** Detected OS: %s" % (self.settings.os))
 
         if self.settings.compiler == "Visual Studio":
-            self.output.warn("*** Detected Visual Studio version: %s" % (self.settings.compiler.version))
+            self.output.info("*** Detected Visual Studio version: %s" % (self.settings.compiler.version))
+            self.output.info("*** Detected Visual Studio runtime: %s" % (self.settings.compiler.runtime))
 
         yasm_path = '%s\\' % (os.getcwd()) 
         os.environ['YASMPATH'] = yasm_path
@@ -147,7 +163,7 @@ class BitprimMpirConan(ConanFile):
 
         os.environ['PATH'] += os.pathsep + yasm_path
         os.environ['PATH'] = 'C:/Bitprim/usr/bin' + os.pathsep + os.environ['PATH']
-        # self.output.warn("*** PATH: %s" % (os.environ['PATH']))
+        # self.output.info("*** PATH: %s" % (os.environ['PATH']))
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             if self.settings.compiler.version == 14:
@@ -155,12 +171,43 @@ class BitprimMpirConan(ConanFile):
             elif  self.settings.compiler.version == 15:
                 build_dir = 'build.vc15'
 
+
+
             build_path = os.path.join(self.ZIP_FOLDER_NAME, build_dir)
-            self.output.warn("*** Detected build_path:   %s" % (build_path))
+            self.output.info("*** Detected build_path:   %s" % (build_path))
+
+
+            bat_file = os.path.join(build_path, "msbuild.bat")
+            self.output.info("*** Detected bat_file:   %s" % (bat_file))
+            
+            # Adding Verbosity to msbuild.bat
+            with fileinput.FileInput(bat_file, inplace=True, backup='.bak') as file:
+                for line in file:
+                    print(line.replace("msbuild.exe", "msbuild.exe /verbosity:n"), end='')
+            
+
+            if self.settings.compiler.runtime == "MD":
+                # mpir_debug_dll.props
+                # mpir_debug_lib.props
+                # mpir_release_dll.props
+                # mpir_release_lib.props
+                props_file_name = "mpir_%s_%s.props" % (self.debug_release_str, self.lib_dll_str)
+                props_path = os.path.join(self.ZIP_FOLDER_NAME, "build.vc", props_file_name)
+                self.output.info("*** Detected props_path:   %s" % (props_path))
+
+                with fileinput.FileInput(props_path, inplace=True, backup='.bak') as file:
+                    for line in file:
+                        if self.settings.build_type == "Debug":
+                            print(line.replace("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>"), end='')
+                        else:
+                            print(line.replace("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>", "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>"), end='')
+
 
             with tools.chdir(build_path):
                 # self.run("msbuild.bat haswell_avx lib x64 release")
-                self.run("msbuild.bat %s lib x64 release" % (self._msvc_microarchitecture(),))
+                bat_cmd = "msbuild.bat %s %s %s %s" % (self._msvc_microarchitecture(), self.lib_dll_str, self.arch_str, self.debug_release_str)
+                self.output.info("*** Detected bat_cmd:   %s" % (bat_cmd))
+                self.run(bat_cmd)
 
         # elif self._is_mingw():
         else:
@@ -179,18 +226,18 @@ class BitprimMpirConan(ConanFile):
                         self.output.info("Activated option! %s" % option_name)
                         config_options_string += " --%s" % option_name.replace("_", "-")
 
-            self.output.warn("*** Detected OS: %s" % (self.settings.os))
+            self.output.info("*** Detected OS: %s" % (self.settings.os))
 
             if self.settings.os == "Macos":
                 config_options_string += " --with-pic"
 
             host_string = self._determine_host()
-            self.output.warn(host_string)
+            self.output.info(host_string)
 
             disable_assembly = "--disable-assembly" if self.settings.arch == "x86" else ""
 
             configure_command = "cd %s && %s ./configure %s --with-pic --enable-static --enable-shared %s %s" % (self.ZIP_FOLDER_NAME, self._generic_env_configure_vars(), host_string, config_options_string, disable_assembly)
-            self.output.warn("*** configure_command: %s" % (configure_command))
+            self.output.info("*** configure_command: %s" % (configure_command))
             self.run(configure_command)
 
             if self.settings.os != "Windows":
