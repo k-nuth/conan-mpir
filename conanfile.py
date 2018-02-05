@@ -36,6 +36,10 @@ class BitprimMpirConan(ConanFile):
     url = "https://github.com/bitprim/bitprim-conan-mpir"
     ZIP_FOLDER_NAME = "mpir-%s" % version
     
+    description = "Multiple Precision Integers and Rationals"
+    license = "LGPL v3+"
+
+
     # generators = "cmake"
     # generators = "txt"
 
@@ -57,7 +61,7 @@ class BitprimMpirConan(ConanFile):
                "microarchitecture": "ANY" #["x86_64", "haswell", "ivybridge", "sandybridge", "bulldozer", ...]
                }
 
-    default_options = "shared=False" \
+    default_options = "shared=False", \
                       "fPIC=True", \
                       "disable_assembly=False", \
                       "enable_fat=False", \
