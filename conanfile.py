@@ -260,7 +260,7 @@ class BitprimMpirConan(ConanFile):
             config_options_string = ""
 
             for option_name in self.options.values.fields:
-                if option_name != 'microarchitecture':
+                if option_name != 'microarchitecture' and option_name != 'fPIC':
                     activated = getattr(self.options, option_name)
                     if activated:
                         self.output.info("Activated option! %s" % option_name)
