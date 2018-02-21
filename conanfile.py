@@ -323,7 +323,9 @@ class BitprimMpirConan(ConanFile):
             self.copy(pattern="*.la", dst="lib", src=lib_dir, keep_path=False)
 
         else:
-            lib_dir = '%s/lib/x64/Release'  % (self.ZIP_FOLDER_NAME)
+            # lib_dir = '%s/lib/x64/Release'  % (self.ZIP_FOLDER_NAME)
+            lib_dir = '%s/lib/x64/%s'  % (self.ZIP_FOLDER_NAME, self.settings.build_type)
+                
             self.output.warn("lib_dir: %s" % (lib_dir))
             self.copy("*.h", dst="include", src=lib_dir, keep_path=True)
             self.copy(pattern="*.dll*", dst="bin", src=lib_dir, keep_path=False)
