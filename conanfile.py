@@ -413,7 +413,7 @@ class BitprimMpirConan(ConanFile):
                                               'bulldozer', 'bd1', 'bulldozernoavx', 'bd1noavx', 'piledriver', 'bd2', 'piledrivernoavx', 'bd2noavx', 'steamroller', 'bd3', 'steamrollernoavx', 'bd3noavx', 'excavator', 'bd4', 'excavatornoavx', 'bd4noavx']:
             return 'haswell'
 
-        if self.options.microarchitecture in ['skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
+        if self.options.microarchitecture in ['skylake-avx512', 'skylake', 'skylakenoavx', 'kabylake', 'kabylakenoavx']:
             return 'skylake'
 
         return 'core2'
