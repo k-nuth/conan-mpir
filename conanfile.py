@@ -108,7 +108,7 @@ class BitprimMpirConan(ConanFile):
 
 
     def config_options(self):
-        self.output.info('*-*-*-*-*-* def config_options(self):')
+        # self.output.info('*-*-*-*-*-* def config_options(self):')
         if self.settings.compiler == "Visual Studio":
             self.options.remove("fPIC")
 
