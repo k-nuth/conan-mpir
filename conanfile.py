@@ -98,10 +98,15 @@ class BitprimMpirConan(ConanFile):
         self.output.info("Detected microarchitecture: %s" % (self.options.microarchitecture,))
 
         if self.options.microarchitecture == "skylake-avx512":
-            self.output.info("'skylake-avx512' microarchitecture is not supported by GMP, fall back to 'skylake'")
+            self.output.info("'skylake-avx512' microarchitecture is not supported by MPIR, fall back to 'skylake'")
             self.options.microarchitecture = 'skylake'
 
-        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+        if self.options.microarchitecture == "x86-64":
+            self.output.info("'x86-64' microarchitecture is not supported by MPIR, fall back to 'x86_64'")
+            self.options.microarchitecture = 'x86_64'
+
+        # if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+        if self.settings.os == "Windows":
             self.options.microarchitecture = self._simplify_microarchitecture()
             
         self.output.info("Compiling for microarchitecture: %s" % (self.options.microarchitecture,))
