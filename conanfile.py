@@ -30,10 +30,10 @@ def get_cpu_microarchitecture():
     return get_cpu_microarchitecture_or_default(microarchitecture_default)
 
 
-class BitprimMpirConan(ConanFile):
+class KthBitprimMpirConan(ConanFile):
     name = "mpir"
     version = "3.0.0"
-    url = "https://github.com/bitprim/bitprim-conan-mpir"
+    url = "https://github.com/k-nuth/kth-conan-mpir"
     ZIP_FOLDER_NAME = "mpir-%s" % version
     
     description = "Multiple Precision Integers and Rationals"
@@ -204,11 +204,11 @@ class BitprimMpirConan(ConanFile):
         yasm_path = '%s\\' % (os.getcwd()) 
         os.environ['YASMPATH'] = yasm_path
 
-        if not os.path.exists('C:/Bitprim/usr/bin'):
-            shutil.copytree('C:/Program Files/Git/usr/bin', 'C:/Bitprim/usr/bin')
+        if not os.path.exists('C:/kth/usr/bin'):
+            shutil.copytree('C:/Program Files/Git/usr/bin', 'C:/kth/usr/bin')
 
         os.environ['PATH'] += os.pathsep + yasm_path
-        os.environ['PATH'] = 'C:/Bitprim/usr/bin' + os.pathsep + os.environ['PATH']
+        os.environ['PATH'] = 'C:/kth/usr/bin' + os.pathsep + os.environ['PATH']
         # self.output.info("*** PATH: %s" % (os.environ['PATH']))
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
