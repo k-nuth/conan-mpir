@@ -6,11 +6,11 @@ environment:
     PYTHON_ARCH: "32"
 
     CONAN_REFERENCE: "mpir/3.0.0"
-    CONAN_USERNAME: "bitprim"
-    CONAN_LOGIN_USERNAME: "bitprim-bintray"
+    CONAN_USERNAME: "kth"
+    CONAN_LOGIN_USERNAME: "fpelliccioni"
     CONAN_CHANNEL: "stable"
 
-    CONAN_UPLOAD: "https://api.bintray.com/conan/bitprim/bitprim"
+    CONAN_UPLOAD: "https://api.bintray.com/conan/k-nuth/kth"
     CONAN_STABLE_BRANCH_PATTERN: "release/*"
 
     matrix:
