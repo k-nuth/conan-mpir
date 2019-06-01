@@ -217,7 +217,7 @@ class KthBitprimMpirConan(ConanFile):
             elif  self.settings.compiler.version == 15:
                 build_dir = 'build.vc15'
             elif  self.settings.compiler.version == 16:
-                build_dir = 'build.vc16'
+                build_dir = 'build.vc15'
 
 
 
