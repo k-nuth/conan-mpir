@@ -70,6 +70,8 @@ class KthBitprimMpirConan(ConanFile):
                       "enable-assert=False", \
                       "microarchitecture=_DUMMY_"
 
+    exports_sources = "patches/*"
+
     @property
     def msvc_mt_build(self):
         return "MT" in str(self.settings.compiler.runtime)
@@ -155,7 +157,7 @@ class KthBitprimMpirConan(ConanFile):
             shutil.copy('./VSYASM/yasm.targets', './mpir-3.0.0/build.vc/vsyasm.targets')
             shutil.copy('./VSYASM/yasm.xml', './mpir-3.0.0/build.vc/vsyasm.xml')
 
-            shutil.copytree('../patches/build.vc16', './mpir-3.0.0/build.vc16')
+            # shutil.copytree('../patches/build.vc16', './mpir-3.0.0/build.vc16')
 
         elif self._is_mingw():
             # shutil.copy('./yasm.exe', 'C:/Windows/system32/yasm.exe')
@@ -195,6 +197,9 @@ class KthBitprimMpirConan(ConanFile):
         return "x64" if self.settings.arch == "x86_64" else "Win32"
 
     def build(self):
+        shutil.copytree('./patches/build.vc16', './mpir-3.0.0/build.vc16')
+
+
         self.output.info("*** Detected OS: %s" % (self.settings.os))
 
         if self.settings.compiler == "Visual Studio":
