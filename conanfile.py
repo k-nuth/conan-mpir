@@ -147,9 +147,6 @@ class KthBitprimMpirConan(ConanFile):
         download(yasm_download, 'yasm.exe')
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-
-
-
             yasm_path = '%s\\' % (os.getcwd()) 
             os.environ['YASMPATH'] = yasm_path
 
@@ -157,6 +154,9 @@ class KthBitprimMpirConan(ConanFile):
             shutil.copy('./VSYASM/yasm.props', './mpir-3.0.0/build.vc/vsyasm.props')
             shutil.copy('./VSYASM/yasm.targets', './mpir-3.0.0/build.vc/vsyasm.targets')
             shutil.copy('./VSYASM/yasm.xml', './mpir-3.0.0/build.vc/vsyasm.xml')
+
+            shutil.copytree('../patches/build.vc16', './mpir-3.0.0/build.vc16')
+
         elif self._is_mingw():
             # shutil.copy('./yasm.exe', 'C:/Windows/system32/yasm.exe')
 
@@ -217,7 +217,7 @@ class KthBitprimMpirConan(ConanFile):
             elif  self.settings.compiler.version == 15:
                 build_dir = 'build.vc15'
             elif  self.settings.compiler.version == 16:
-                build_dir = 'build.vc15'
+                build_dir = 'build.vc16'
 
 
 
