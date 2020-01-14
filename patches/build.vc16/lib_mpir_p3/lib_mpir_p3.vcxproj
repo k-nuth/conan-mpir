@@ -48,7 +48,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
       <Command>cd ..\..\build.vc
-prebuild p3 Win32 15
+prebuild p3 Win32 16
       </Command>
     </PreBuildEvent>
     <YASM>
@@ -64,14 +64,14 @@ prebuild p3 Win32 15
     </ClCompile>
     <PostBuildEvent>
       <Command>cd ..\..\build.vc
-postbuild "$(TargetPath)" 15
+postbuild "$(TargetPath)" 16
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
       <Command>cd ..\..\build.vc
-prebuild p3 Win32 15
+prebuild p3 Win32 16
       </Command>
     </PreBuildEvent>
     <YASM>
@@ -87,7 +87,7 @@ prebuild p3 Win32 15
     </ClCompile>
     <PostBuildEvent>
       <Command>cd ..\..\build.vc
-postbuild "$(TargetPath)" 15
+postbuild "$(TargetPath)" 16
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
