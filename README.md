@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/k-nuth/kth-conan-mpir.svg?branch=master)](https://travis-ci.org/k-nuth/kth-conan-mpir) [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/k-nuth/kth-conan-mpir?branch=master&svg=true)](https://ci.appveyor.com/project/k-nuth/kth-conan-mpir?branch=master)
+[![Build Status](https://travis-ci.org/k-nuth/conan-mpir.svg?branch=master)](https://travis-ci.org/k-nuth/conan-mpir) [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/k-nuth/conan-mpir?branch=master&svg=true)](https://ci.appveyor.com/project/k-nuth/conan-mpir?branch=master)
 
-# kth-conan-mpir
+# conan-mpir
 
 [Conan.io](https://conan.io) package for GMP library. https://gmplib.org/
 

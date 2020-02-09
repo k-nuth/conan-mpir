@@ -33,7 +33,7 @@ def get_cpu_microarchitecture():
 class KthBitprimMpirConan(ConanFile):
     name = "mpir"
     version = "3.0.0"
-    url = "https://github.com/k-nuth/kth-conan-mpir"
+    url = "https://github.com/k-nuth/conan-mpir"
     ZIP_FOLDER_NAME = "mpir-%s" % version
     
     description = "Multiple Precision Integers and Rationals"
