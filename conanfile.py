@@ -122,13 +122,10 @@ class KthBitprimMpirConan(ConanFile):
             if self.options.shared and self.msvc_mt_build:
                 self.options.remove("shared")
 
-    # def requirements(self):
-    #     if self._is_mingw():
-    #         self.requires.add("m4/1.4.18@bitprim/stable")
-
     def build_requirements(self):
         if self._is_mingw():
-            self.build_requires("m4/1.4.18@bitprim/stable")
+            # self.build_requires("m4/1.4.18@bitprim/stable")
+            self.build_requires("m4/1.4.18@")
 
     def source(self):
         # http://mpir.org/mpir-3.0.0.tar.bz2
